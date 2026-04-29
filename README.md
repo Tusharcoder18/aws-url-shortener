@@ -2,7 +2,7 @@
 
 A production-ready URL shortener built entirely on AWS serverless infrastructure. Paste a long URL, get a short one instantly — no servers to manage, scales automatically, costs near zero.
 
-**Live demo:** `https://wvpbmi0ywl.execute-api.ap-south-1.amazonaws.com/prod/shorten`
+**Live demo:** `https://url-shortener-frontend-tushar.s3.ap-south-1.amazonaws.com/index.html`
 
 ---
 
@@ -159,9 +159,9 @@ aws apigateway create-resource --rest-api-id YOUR_API_ID --parent-id YOUR_ROOT_I
 aws apigateway create-resource --rest-api-id YOUR_API_ID --parent-id YOUR_ROOT_ID --path-part "{short_id}" --region ap-south-1
 ```
 Connect POST '/shorten' integration and GET '/{short_id}' integration to Lambda.
-Add permissions to invoke/trigger Lambda
-Enable CORS for POST, GET, OPTIONS
-Deploy the api
+Add permissions to invoke/trigger Lambda.
+Enable CORS for POST, GET, OPTIONS.
+Deploy the api.
 
 ```bash
 aws apigateway create-deployment --rest-api-id YOUR_API_ID --stage-name prod --region ap-south-1
