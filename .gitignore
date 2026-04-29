@@ -1,0 +1,4 @@
+lambda.zip
+*.pyc
+__pycache__/
+.env

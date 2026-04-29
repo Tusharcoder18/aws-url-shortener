@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TinyURL — Tushar's URL Shortener</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: #1e293b; border-radius: 16px; padding: 40px; width: 100%; max-width: 540px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
+    h1 { font-size: 2rem; font-weight: 700; color: #38bdf8; margin-bottom: 6px; }
+    p.sub { color: #94a3b8; margin-bottom: 28px; font-size: 0.95rem; }
+    input { width: 100%; padding: 14px 16px; border-radius: 10px; border: 1.5px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 1rem; margin-bottom: 12px; outline: none; transition: border 0.2s; }
+    input:focus { border-color: #38bdf8; }
+    button { width: 100%; padding: 14px; background: #38bdf8; color: #0f172a; font-size: 1rem; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: #7dd3fc; }
+    button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+    .result { margin-top: 24px; padding: 16px; background: #0f172a; border-radius: 10px; border: 1.5px solid #334155; display: none; }
+    .result.show { display: block; }
+    .result label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .short-url { font-size: 1.1rem; color: #38bdf8; word-break: break-all; margin: 6px 0 12px; }
+    .copy-btn { background: transparent; border: 1.5px solid #38bdf8; color: #38bdf8; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; width: auto; font-weight: 600; }
+    .copy-btn:hover { background: #38bdf8; color: #0f172a; }
+    .error { color: #f87171; margin-top: 12px; font-size: 0.9rem; display: none; }
+    .error.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚡ TinyURL</h1>
+    <p class="sub">Serverless URL shortener — built on AWS Lambda + DynamoDB</p>
+    <input type="url" id="urlInput" placeholder="Paste a long URL here..." />
+    <button id="shortenBtn" onclick="shortenUrl()">Shorten URL</button>
+    <div class="result" id="result">
+      <label>Your short URL</label>
+      <div class="short-url" id="shortUrl"></div>
+      <button class="copy-btn" onclick="copyUrl()">📋 Copy</button>
+    </div>
+    <div class="error" id="error"></div>
+  </div>
+
+  <script>
+    const API = 'https://wvpbmi0ywl.execute-api.ap-south-1.amazonaws.com/prod';
+
+    async function shortenUrl() {
+      const url = document.getElementById('urlInput').value.trim();
+      const btn = document.getElementById('shortenBtn');
+      const resultDiv = document.getElementById('result');
+      const errorDiv = document.getElementById('error');
+
+      resultDiv.classList.remove('show');
+      errorDiv.classList.remove('show');
+
+      if (!url) { showError('Please enter a URL'); return; }
+      if (!url.startsWith('http')) { showError('URL must start with http:// or https://'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Shortening...';
+
+      try {
+        const res = await fetch(`${API}/shorten`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        const shortUrl = `${API}/${data.short_id}`;
+        document.getElementById('shortUrl').textContent = shortUrl;
+        resultDiv.classList.add('show');
+      } catch (e) {
+		console.log(e);
+        showError('Something went wrong. Check your API URL.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Shorten URL';
+      }
+    }
+
+    function copyUrl() {
+      const text = document.getElementById('shortUrl').textContent;
+      navigator.clipboard.writeText(text);
+      event.target.textContent = '✅ Copied!';
+      setTimeout(() => event.target.textContent = '📋 Copy', 2000);
+    }
+
+    function showError(msg) {
+      const e = document.getElementById('error');
+      e.textContent = msg;
+      e.classList.add('show');
+    }
+
+    document.getElementById('urlInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') shortenUrl();
+    });
+  </script>
+</body>
+</html>
